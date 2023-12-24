@@ -1,4 +1,12 @@
 {
+  "name": "health-app",
+  "version": "1.0.0",
+  "description": "Health App",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
   "dependencies": {
     "@serialport/parser-delimiter": "^12.0.0",
     "@serialport/parser-readline": "^12.0.0",
