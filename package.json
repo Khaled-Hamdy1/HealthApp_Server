@@ -14,6 +14,7 @@
     "@serialport/parser-delimiter": "^12.0.0",
     "@serialport/parser-readline": "^12.0.0",
     "@serialport/parser-ready": "^12.0.0",
+    "@supabase/supabase-js": "^2.39.1",
     "express": "^4.18.2",
     "serialport": "^12.0.0",
     "socket.io": "^4.7.2"

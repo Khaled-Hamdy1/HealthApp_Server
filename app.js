@@ -1,11 +1,17 @@
 const express = require("express");
 const { createServer } = require("node:http");
 const { Server } = require("socket.io");
+const { createClient } = require("@supabase/supabase-js");
 
 const { SerialPort } = require("serialport");
 const { DelimiterParser } = require("@serialport/parser-delimiter");
 
 const app = express();
+const supabaseUrl = "https://ctfuvqknojlnfxlkqccc.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0ZnV2cWtub2psbmZ4bGtxY2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2NjQ4NTYsImV4cCI6MjAxODI0MDg1Nn0.7Q4Xtp_kJuo7dMeZuAF0ZZKRShJidQvfUSeGmjljvWs";
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -33,11 +39,16 @@ port.on("error", console.log);
 const parser = port.pipe(new DelimiterParser({ delimiter: "\n" }));
 
 const arr = [];
+const users = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected");
 
-  
+  socket.on("newUser", (data) => {
+    users[socket.id] = data;
+    io.emit("users", users);
+    console.log(users);
+  });
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
@@ -56,9 +67,26 @@ parser.on("data", (data) => {
     arr.push(dto);
   }
 
-  const dataObj = arr[0]
-  if(Object.keys(dataObj).length === 2) {
+  const dataObj = arr[0];
+  if (Object.keys(dataObj).length === 2) {
     io.emit("data", dataObj);
+    for (const val of Object.values(users)) {
+      supabase
+        .from("user_profiles")
+        .insert([
+          {
+            blood_oxygen: dataObj["SPO2"],
+            heart_rate: dataObj["heart_rate"],
+            user_id: val,
+          },
+        ])
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
     arr.length = 0;
   }
 });
